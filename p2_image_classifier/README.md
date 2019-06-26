@@ -11,7 +11,7 @@ that name.
 
 ## Command line output:
 
-```Shell
+```console
 root@725e72d845e3:/home/workspace/ImageClassifier$ python train.py --epochs 10 --learning_rate 0.001
 Loading pretrained model...................................
 Downloading: "https://download.pytorch.org/models/vgg16-397923af.pth" to /root/.torch/models/vgg16-397923af.pth
