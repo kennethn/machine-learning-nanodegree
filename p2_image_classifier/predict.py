@@ -53,7 +53,7 @@ parser.add_argument('--img',
                     action='store',
                     help='File path to an image input')
 parser.add_argument('--checkpoint',
-                    default='model_checkpoint2.pth',
+                    default='model_checkpoint.pth',
                     type=str,
                     dest='checkpoint',
                     action='store',
