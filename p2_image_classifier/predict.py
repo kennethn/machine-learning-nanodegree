@@ -29,17 +29,18 @@ Examples:
         python predict.py input checkpoint --gpu
 '''
 
-import time
 import json
-import torch
 import argparse
-import torchvision
-import torch.nn.functional as F
+from collections import OrderedDict
+
 import numpy as np
 from PIL import Image
+
+import torch
 from torch import nn
 from torch import optim
-from collections import OrderedDict
+import torch.nn.functional as F
+import torchvision
 from torchvision import datasets, transforms, models
 
 parser = argparse.ArgumentParser(
@@ -71,9 +72,9 @@ parser.add_argument('--category_names',
                     action='store',
                     help='JSON file containing category-name mapping')
 parser.add_argument('--gpu',
-                    type=str,
+                    type=bool,
                     dest='gpu',
-                    default='gpu',
+                    default=True,
                     action='store',
                     help='Number of epochs')
 
@@ -84,25 +85,35 @@ top_k = pa.top_k
 category_names = pa.category_names
 gpu = pa.gpu
 
-device = 'cuda:0' if gpu == 'gpu' else 'cpu'
+if (torch.cuda.is_available() and gpu == True):
+    gpu = True
+    device = torch.device('cuda:0')
+else:
+    gpu = False
+    device = torch.device('cpu')
 
 with open(category_names, 'r') as f:
     cat_to_name = json.load(f)
 
 def load_checkpoint(filepath):
-    cp = torch.load(filepath, map_location=device)
+    cp = torch.load(filepath)
 
-    md = models.vgg16(pretrained=True)
+    if cp['architecture'] == 'vgg16':
+        model = models.vgg16(pretrained=True)
+        model.name = 'vgg16'
+    elif cp['architecture'] == 'alexnet':
+        model = models.alexnet(pretrained = True)
+        model.name = 'alexnet'
 
     # Freeze parameters so we don't backprop through them
-    for param in md.parameters():
+    for param in model.parameters():
         param.requires_grad = False
 
-    md.class_to_idx = cp['class_to_idx']
-    md.classifier = cp['classifier']
-    md.load_state_dict(cp['state_dict'])
+    model.class_to_idx = cp['class_to_idx']
+    model.classifier = cp['classifier']
+    model.load_state_dict(cp['state_dict'])
 
-    return md
+    return model
 
 def process_image(image):
     ''' Scales, crops, and normalizes a PIL image for a PyTorch model,
@@ -130,7 +141,7 @@ def predict(image_path, model):
     probability = F.softmax(output.data, dim=1)
 
     pb, cl = probability.topk(top_k)
-    if device == 'cuda:0':
+    if gpu:
         return pb.cpu().numpy(), cl.cpu().numpy()
     else:
         return pb.numpy(), cl.numpy()

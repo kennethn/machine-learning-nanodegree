@@ -23,19 +23,19 @@ Use GPU for training:
     python train.py data_dir --gpu
 '''
 
-import time
+import os
 import json
-import torch
 import argparse
-import torchvision
-import numpy as np
-import pandas as pd
-import torch.nn.functional as F
-import seaborn as sns
+from collections import OrderedDict
 
+import numpy as np
+from PIL import Image
+
+import torch
 from torch import nn
 from torch import optim
-from collections import OrderedDict
+import torch.nn.functional as F
+import torchvision
 from torchvision import datasets, transforms, models
 
 parser = argparse.ArgumentParser(
@@ -121,21 +121,24 @@ validloader = torch.utils.data.DataLoader(valid_data, batch_size=32)
 testloader = torch.utils.data.DataLoader(test_data, batch_size=32)
 
 class_names = train_data.classes
+output_size = len(class_names)
 
 with open('cat_to_name.json', 'r') as f:
     cat_to_name = json.load(f)
 
-print('Loading pretrained model...................................')
-
 if arch == 'vgg16':
     model = models.vgg16(pretrained=True)
     model.name = 'vgg16'
+    input_size = 25088
 elif arch == 'alexnet':
     model = models.alexnet(pretrained = True)
     model.name = 'alexnet'
+    input_size = 9216
 else:
-    print('ERROR: ', arch, ' is not a valid model architecture')
+    print('ERROR:', arch, 'is not a valid model architecture')
     exit()
+
+print('Loading', arch, 'pretrained model...........................')
 
 # Freeze parameters so we don't backprop through them
 for param in model.parameters():
@@ -143,24 +146,24 @@ for param in model.parameters():
 
 classifier = nn.Sequential(OrderedDict([
             ('dropout',nn.Dropout(0.5)),
-            ('inputs', nn.Linear(25088, 120)),
+            ('inputs', nn.Linear(input_size, hidden_units)),
             ('relu1', nn.ReLU()),
             ('hidden_layer1', nn.Linear(hidden_units, 90)),
             ('relu2',nn.ReLU()),
             ('hidden_layer2',nn.Linear(90, 80)),
             ('relu3',nn.ReLU()),
-            ('hidden_layer3',nn.Linear(80,102)),
+            ('hidden_layer3',nn.Linear(80, output_size)),
             ('output', nn.LogSoftmax(dim=1))
             ]))
 
 model.classifier = classifier
 
-if gpu == 'gpu':
+if (torch.cuda.is_available() and gpu == 'gpu'):
     device = torch.device('cuda:0')
 else:
     device = torch.device('cpu')
 
-print('Using ', device, '...........................................')
+print('Using', device, '...........................................')
 
 model.to(device)
 
@@ -238,13 +241,16 @@ print('Validating on test set..........................................')
 
 test_network(testloader)
 
-model_f = save_dir + 'model_checkpoint.pth'
+model_f = os.path.join(save_dir, 'model_checkpoint.pth')
 
 model.class_to_idx = trainloader.dataset.class_to_idx
 model.epochs = epochs
-checkpoint = {'batch_size': trainloader.batch_size,
-              'input_size': 25088,
-              'output_size': 120,
+checkpoint = {'architecture': arch,
+              'batch_size': trainloader.batch_size,
+              'input_size': input_size,
+              'output_size': output_size,
+              'hidden_units': hidden_units,
+              'learning_rate': learning_rate,
               'state_dict': model.state_dict(),
               'optimizer_dict': optimizer.state_dict(),
               'class_to_idx': model.class_to_idx,
