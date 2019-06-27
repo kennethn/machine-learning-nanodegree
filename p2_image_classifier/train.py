@@ -78,11 +78,11 @@ parser.add_argument('--hidden_units',
                     action='store',
                     help='Number of hidden units')
 parser.add_argument('--gpu',
-                    type=str,
+                    type=bool,
                     dest='gpu',
-                    default='gpu',
+                    default=True,
                     action='store',
-                    help='Use GPU')
+                    help='Number of epochs')
 
 pa = parser.parse_args()
 data_dir = pa.data_dir
@@ -158,7 +158,7 @@ classifier = nn.Sequential(OrderedDict([
 
 model.classifier = classifier
 
-if (torch.cuda.is_available() and gpu == 'gpu'):
+if (torch.cuda.is_available() and gpu):
     device = torch.device('cuda:0')
 else:
     device = torch.device('cpu')

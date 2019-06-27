@@ -85,7 +85,7 @@ top_k = pa.top_k
 category_names = pa.category_names
 gpu = pa.gpu
 
-if (torch.cuda.is_available() and gpu == True):
+if (torch.cuda.is_available() and gpu):
     gpu = True
     device = torch.device('cuda:0')
 else:
