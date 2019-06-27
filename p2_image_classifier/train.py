@@ -217,7 +217,7 @@ for e in range(epochs):
             running_loss = 0
 
 
-# TODO: Do validation on the test set
+# Do validation on the test set
 def test_network(testloader):
     correct = 0
     total = 0
