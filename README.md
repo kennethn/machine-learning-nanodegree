@@ -2,7 +2,7 @@
 
 ### Copyright © 2019, Ken Norton
 
-This repository contains projects for Udacity's [Intro to Machine Learning Nanodegree](https://d20vrrgs8k4bvw.cloudfront.net/documents/en-US/intro-to-machine-learning-nanodegree-program-syllabus.pdf).
+This repository contains projects for Udacity's [Intro to Machine Learning Nanodegree](https://d20vrrgs8k4bvw.cloudfront.net/documents/en-US/intro-to-machine-learning-nanodegree-program-syllabus.pdf). The nanodegree was completed on June 27, 2019.
 
 ---
 
@@ -17,3 +17,5 @@ In this project, you'll train an image classifier to recognize different species
 ## [Project 3: Unsupervised Learning - Identify Customer Segments](p3_customer_segments)
 
 In this project, you will apply unsupervised learning techniques to identify segments of the population that form the core customer base for a mail-order sales company in Germany. These segments can then be used to direct marketing campaigns towards audiences that will have the highest expected rate of returns.
+
+[![](ML-Certificate-Ken-Norton.svg)](https://confirm.udacity.com/H9MH6NQ2)
